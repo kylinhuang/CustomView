@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
+    <color name="green">#00ff00</color>
+    <color name="orange">#f58220</color>
+    <color name="transparent">#00000000</color>
+   
+    <color name="translucent_background">#e0000000</color>
+    <color name="gray">#FF616161</color>
+    <color name="dark">#FF333333</color>   
+    <color name="red">#FFFF0000</color>
+    <color name="menu_cover">#BF000000</color>
+    <color name="qiyi_warning">#ffff9c00</color>
+    <color name="search_nothing_text">#f1f1f1</color>
+    
+    <color name="search_nothing_text_orange">#ffff9c00</color>
+    
+    
+    <color name="search_nothing_text_error">#ffb400</color>
+    
+    <color name="search_hotword_text">#fff1f1f1</color>
+    <color name="search_hotword_text_focus">#fff1f1f1</color>
+    <color name="search_hotword_title">#ff656565</color>
+    <color name="waiting_dialog_window_bg">#00000000</color>
+
+    <color name="keyboard_text">#ff000000</color>
+    <color name="keyboard_text_hl">#fff1f1f1</color>
+    
+    <!-- album  TextColor -->
+    <color name="album_title_text_color" >#999999</color>
+    <color name="album_des_text_color">#999999</color>
+    
+    <color name="Gray">#ff999999</color>
+    
+    <color name="album_text_normal">#6f6f6f</color>
+    <color name="album_text_focus">#ffffff</color>
+    <color name="bg_album_horizontal_item_image">#5f3f3f3f</color>
+    <color name="video_play_text_color">#999999</color>
+    
+    <!-- "首页"文本颜色 -->
+    <color name="home_page_text_color">#7f666666</color>
+    <!-- 主演列表背景色 -->
+    <color name="actor_list_item_background">#cc333333</color>
+    <color name="actor_list_item_hight_background">#f1f1f1</color>
+    <color name="actor_list_background">#00ffffff</color>
+</resources>
