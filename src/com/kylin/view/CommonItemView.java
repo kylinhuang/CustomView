@@ -1,6 +1,8 @@
 package com.kylin.view;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +11,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.kylin.R;
+import com.kylin.utils.BitmapHelp;
+import com.lidroid.xutils.BitmapUtils;
 
 public class CommonItemView extends RelativeLayout {
 
@@ -59,6 +63,19 @@ public class CommonItemView extends RelativeLayout {
 
 	public void setNameSize(int size) {
 		nameText.setTextSize(size);
+	}
+	
+	public void setNameBg(int resid) {
+//		nameText.setBackgroundColor(Color.parseColor(colorString));
+		nameText.setBackgroundResource(resid);
+	}
+
+	public void setItemBackgroundUrl(String url) {
+		BitmapUtils bitmapUtils = BitmapHelp.getBitmapUtils(mContext);
+//        bitmapUtils.configDefaultLoadingImage(R.drawable.ic_launcher);
+////        bitmapUtils.configDefaultLoadFailedImage(R.drawable.bitmap);
+//        bitmapUtils.configDefaultBitmapConfig(Bitmap.Config.RGB_565);
+		bitmapUtils.display(image_content, url);		
 	}
 	
 	

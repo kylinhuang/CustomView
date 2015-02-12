@@ -10,8 +10,6 @@ public class TitleEntity extends BaseEntity implements Serializable{
 	private static final long serialVersionUID = 1L;
 	
 	public String text;
-	
- 
 	public int textSize;
 	public int position;
 }

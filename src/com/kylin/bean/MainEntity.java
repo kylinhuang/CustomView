@@ -5,29 +5,29 @@ import java.util.HashMap;
 
 public class MainEntity {
 	
-	private int background ;
+	private String background ;
 	
-	BaseEntity logoEntity;
+	LogoEntity logoEntity;
 	BaseEntity networkEntity;
-	BaseEntity timeEntity;
+	TimeEntity timeEntity;
 	ArrayList<TitleEntity> arrayTitle;
 	
 	ArrayList<ArrayList<ItemEntity>> arrTab;
 	 
 
-	public int getBackground() {
+	public String getBackground() {
 		return background;
 	}
 
-	public void setBackground(int background) {
+	public void setBackground(String background) {
 		this.background = background;
 	}
 
-	public BaseEntity getLogoEntity() {
+	public LogoEntity getLogoEntity() {
 		return logoEntity;
 	}
 
-	public void setLogoEntity(BaseEntity logoEntity) {
+	public void setLogoEntity(LogoEntity logoEntity) {
 		this.logoEntity = logoEntity;
 	}
 
@@ -39,11 +39,11 @@ public class MainEntity {
 		this.networkEntity = networkEntity;
 	}
 
-	public BaseEntity getTimeEntity() {
+	public TimeEntity getTimeEntity() {
 		return timeEntity;
 	}
 
-	public void setTimeEntity(BaseEntity timeEntity) {
+	public void setTimeEntity(TimeEntity timeEntity) {
 		this.timeEntity = timeEntity;
 	}
 
@@ -62,4 +62,5 @@ public class MainEntity {
 	public void setArrTab(ArrayList<ArrayList<ItemEntity>> arrTab) {
 		this.arrTab = arrTab;
 	}
+
 }

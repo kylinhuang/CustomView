@@ -5,7 +5,8 @@
     <color name="green">#00ff00</color>
     <color name="orange">#f58220</color>
     <color name="transparent">#00000000</color>
-   
+    <color name="name_bg">#CC000000</color>
+    
     <color name="translucent_background">#e0000000</color>
     <color name="gray">#FF616161</color>
     <color name="dark">#FF333333</color>   

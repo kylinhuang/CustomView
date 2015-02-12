@@ -4,11 +4,13 @@ import java.util.ArrayList;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.kylin.R;
 import com.kylin.bean.ItemEntity;
@@ -20,15 +22,9 @@ public class Tab extends FrameLayout implements ITabPage{
 	
 	private static final String TAG = "TabTV";
 
-	private static final int TIME_OUT = 440;
 	private Context mContext;
-	private RelativeLayout mContainer;
-	private LinearLayout llPlay;
-	private LinearLayout llRightMiddle;
-	private LinearLayout llRightTop;
 	public String url;
 
-	private ArrayList<Thread> requsetThread = new ArrayList<Thread>();
 
 	private RelativeLayout rl;
 
@@ -38,19 +34,16 @@ public class Tab extends FrameLayout implements ITabPage{
 	public Tab(Context context) {
 		super(context);
 		mContext = context;
-//		init();
 	}
 
 	public Tab(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		mContext = context;
-//		init();
 	}
 
 	public Tab(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		mContext = context;
-//		init();
 	}
 
 
@@ -122,10 +115,20 @@ public class Tab extends FrameLayout implements ITabPage{
 		commonItemView.setName(item.name);
 		commonItemView.setNameSize(item.nameSize);
 		commonItemView.setIcon(item.image_icon);
-		commonItemView.setItemBackground(item.image_content);
+		if(item.image_content_type == 1){
+			commonItemView.setItemBackgroundUrl(item.image_content_uri);
+		}else {
+			commonItemView.setItemBackground(item.image_content);
+		}
+		
+		if (item.hasNameBg)   commonItemView.setNameBg(R.color.name_bg);
 		commonItemView.setFocusable(item.hasFocus);
 		commonItemView.setBackgroundResource(R.drawable.image_button_bg);
 		commonItemView.setOnFocusChangeListener(mFocusListener);
+		
+		
+		commonItemView.setOnClickListener(new OnClickListener(item));
+		
 		commonItemView.setId(item.id);
 		commonItemView.setNextFocusLeftId(item.NextFocusLeftId);
 		commonItemView.setNextFocusUpId(item.NextFocusUpId);
@@ -142,6 +145,29 @@ public class Tab extends FrameLayout implements ITabPage{
 		 arrCommonItemView.add(commonItemView);
 		 
 	}
+	
+	
+	class OnClickListener implements  View.OnClickListener{
+
+		private ItemEntity item;
+
+		public OnClickListener(ItemEntity item) {
+			this.item=item;
+		}
+
+		@Override
+		public void onClick(View v) {
+			try {
+				Intent intent = new Intent(item.action);   
+				mContext.startActivity(intent);
+			} catch (Exception e) {
+				Toast.makeText(mContext, "无法启动", 1).show();
+				e.printStackTrace();
+			}   
+		}
+		
+	}
+	 
 		
 	private OnFocusChangeListener mFocusListener = new View.OnFocusChangeListener() {
 		@Override
@@ -179,8 +205,5 @@ public class Tab extends FrameLayout implements ITabPage{
 		}
 		rl.setBackgroundColor(R.color.green);
 	}
-
-
-	 
 	
 }

@@ -3,9 +3,15 @@ package com.kylin.activity;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -21,18 +27,26 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Scroller;
 import android.widget.TextView;
-
 import com.google.gson.Gson;
 import com.kylin.R;
 import com.kylin.bean.BaseEntity;
 import com.kylin.bean.ItemEntity;
+import com.kylin.bean.LogoEntity;
 import com.kylin.bean.MainEntity;
+import com.kylin.bean.TimeEntity;
 import com.kylin.bean.TitleEntity;
+import com.kylin.utils.BitmapHelp;
 import com.kylin.utils.EntityUtils;
 import com.kylin.view.ITabPage;
 import com.kylin.view.Tab;
 import com.kylin.view.TimeView;
+import com.lidroid.xutils.BitmapUtils;
+import com.lidroid.xutils.bitmap.BitmapDisplayConfig;
+import com.lidroid.xutils.bitmap.callback.BitmapLoadCallBack;
+import com.lidroid.xutils.bitmap.callback.BitmapLoadFrom;
+import com.utils.LoggerUtils;
 
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 public class MainActivity extends Activity {
 
 	public static final String TAG = "MainActivity";
@@ -41,11 +55,11 @@ public class MainActivity extends Activity {
 	private LayoutInflater mLayoutInflater;
 	private View view;
 	private RelativeLayout rl_content;
-	private BaseEntity logoEntity;
+	private LogoEntity logoEntity;
 	private RelativeLayout rl;
 	private MainEntity mainEntity;
 	private BaseEntity networkEntity;
-	private BaseEntity timeEntity;
+	private TimeEntity timeEntity;
 	private ArrayList<TitleEntity> arrayTitle;
 	ArrayList<TextView> arrTitle = new  ArrayList<TextView>();
 	private ViewPager mViewPager;
@@ -62,49 +76,65 @@ public class MainActivity extends Activity {
 	private int mLastKeyCode;
 	public int mSelectedPageIndex;
 	/**  焦点是否保持在菜单下   */ 
-	private boolean mKeepMenuState ; 
+	private boolean mKeepMenuState ;
+	private ImageView networkView;
+	private TimeView timeView; 
 
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mContext = this;
+		
+		init();
 		initEntity();
 		initView();
 	}
 
+	private void init() {
+		BitmapUtils bitmapUtils = BitmapHelp.getBitmapUtils(mContext);
+//        bitmapUtils.configDefaultLoadingImage(R.drawable.ic_launcher);
+//        bitmapUtils.configDefaultLoadFailedImage(R.drawable.bitmap);
+        bitmapUtils.configDefaultBitmapConfig(Bitmap.Config.RGB_565);
+	}
+
 	private void initEntity() {
 		mainEntity 		= EntityUtils.getMainEntity();
-		 Gson gson = new Gson();
-	     String jsonStudents = gson.toJson(mainEntity);
-//		JSONObject json = JSONObject.fromObject(mainEntity); 
-		Log.e(TAG, jsonStudents);
-//		System.out.println(json);// 
+		Gson gson = new Gson();
+	    String jsonStudents = gson.toJson(mainEntity);
+	    LoggerUtils.isDebug = true;
+		LoggerUtils.e(TAG, jsonStudents);
 		
 		logoEntity 		= mainEntity.getLogoEntity();
 		networkEntity 	= mainEntity.getNetworkEntity();
 		timeEntity 		= mainEntity.getTimeEntity();
 		arrayTitle 		= mainEntity.getArrayTitle();
 		arrTab 			= mainEntity.getArrTab();
-		
 	}
-
-
 
 	private void initView() {
 		 rl = new RelativeLayout(this); 
 		 RelativeLayout.LayoutParams mainParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT); 
 		 setContentView(rl, mainParams);
 		 initViewMainBackground();
-		 initView(logoEntity);
-		 initView(networkEntity);
-		 initView(timeEntity);
+		 initView_logo(logoEntity, R.drawable.icon);
+		 initViewNetwork(networkEntity);
+		 initViewTime(timeEntity);
 		 for (TitleEntity titleEntity : arrayTitle) {
 			 initViewTitle(titleEntity);
 		}
 		initViewPager();
 		changeViewPageScroller();
 		
+	}
+
+
+
+
+	private void initViewTime(TimeEntity timeEntity ) {
+		timeView = new TimeView(mContext);
+		timeView.setTextSize(timeEntity.textSize);
+		initViewParameter(timeEntity, rl, timeView);
 	}
 
 	private void initViewPager() {
@@ -155,40 +185,101 @@ public class MainActivity extends Activity {
 		 rl.addView(textView, relLayoutParams);
 		 
 		 arrTitle.add(textView);
-		
 	}
 
 	private void initViewMainBackground() {
-		rl.setBackgroundResource(mainEntity.getBackground());
+		
+//		BitmapUtils.
+		BitmapUtils bitmapUtils = BitmapHelp.getBitmapUtils(mContext);
+		bitmapUtils.display(rl, mainEntity.getBackground());
+//		rl.setBackgroundResource(mainEntity.getBackground());
 	}
 
-
 	
-	private void initView(BaseEntity entity) {
-		View view = null;
-		switch (entity.type) {
-		case 1:
-			view = new ImageView(mContext);
-			if(entity.background != 0 ) view.setBackgroundResource(entity.background);
-			break;
-		case 2:
-			view = new TimeView(mContext);
-			break;
-		case 4:
-			break;
-		case 5:
-			break;
-		default:
-			break;
-		}
+	private void initViewNetwork(BaseEntity networkEntity ) {
+		networkView = new ImageView(mContext);
+		networkView.setBackgroundResource(R.drawable.main_page_image_wired_disconnect);
+		initViewParameter(networkEntity, rl, networkView);
+	}
+
+	private void initView_logo(LogoEntity logoEntity,final int resid) {
+		final ImageView view = new ImageView(mContext);
+		if(logoEntity.background_url == null || "".equals(logoEntity.background_url)){
+			view.setBackgroundResource(resid);
+		}else {
+			BitmapUtils bitmapUtils = BitmapHelp.getBitmapUtils(mContext);
+			bitmapUtils.display(view, logoEntity.background_url,new BitmapLoadCallBack<View>() {
+				@Override
+				public void onLoadCompleted(View container, String uri,
+						Bitmap bitmap, BitmapDisplayConfig config,
+						BitmapLoadFrom from) {
+					 fadeInDisplay(view, bitmap);
+				}
+
+				@Override
+				public void onLoadFailed(View container, String uri,
+						Drawable drawable) {
+					view.setBackgroundResource(resid);
+				}
+			}  );
+		} 
+		 
+		initViewParameter(logoEntity, rl, view);
+		
+	}
+	private static final ColorDrawable TRANSPARENT_DRAWABLE = new ColorDrawable(android.R.color.transparent);
+	protected void fadeInDisplay(ImageView imageView, Bitmap bitmap) {
+        final TransitionDrawable transitionDrawable =
+                new TransitionDrawable(new Drawable[]{
+                        TRANSPARENT_DRAWABLE,
+                        new BitmapDrawable(imageView.getResources(), bitmap)
+                });
+        imageView.setImageDrawable(transitionDrawable);
+        transitionDrawable.startTransition(500);
+    }
+
+ 
+	private void initViewParameter(BaseEntity entity, RelativeLayout  parentView,View view) {
 		view.setFocusable(entity.hasFocus);
 		RelativeLayout.LayoutParams relLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT); 
 		relLayoutParams.setMargins(entity.x, entity.y, 0, 0);
 		 
 		if (entity.width != 0)  relLayoutParams.width  = entity.width;
 		if (entity.height != 0) relLayoutParams.height = entity.height;
-		rl.addView(view, relLayoutParams);
+		parentView.addView(view, relLayoutParams);
 	}
+
+//	private void initView(BaseEntity entity) {
+//		View view = null;
+//		switch (entity.type) {
+//		case 1:
+//			view = new ImageView(mContext);
+//			
+//			if(entity.background_type == 0 ){
+//				view.setBackgroundResource(entity.background_id);
+//			}else {
+//				BitmapUtils bitmapUtils = BitmapHelp.getBitmapUtils(mContext);
+//				bitmapUtils.display(view, entity.background_url);
+//			} 
+//			break;
+//		case 2:
+//			view = new TimeView(mContext);
+//			break;
+//		case 4:
+//			break;
+//		case 5:
+//			break;
+//		default:
+//			break;
+//		}
+//		view.setFocusable(entity.hasFocus);
+//		RelativeLayout.LayoutParams relLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT); 
+//		relLayoutParams.setMargins(entity.x, entity.y, 0, 0);
+//		 
+//		if (entity.width != 0)  relLayoutParams.width  = entity.width;
+//		if (entity.height != 0) relLayoutParams.height = entity.height;
+//		rl.addView(view, relLayoutParams);
+//	}
 	
 	
 	class OnFocusChangeListener implements View.OnFocusChangeListener{
@@ -359,94 +450,5 @@ public class MainActivity extends Activity {
 			}
 			return super.dispatchKeyEvent(event);
 		}
-		
-//		@Override
-//		public boolean dispatchKeyEvent(KeyEvent event) {
-//			
-//			if (KeyEvent.ACTION_DOWN == event.getAction()) {
-//				
-////				//BACK into stbPlay
-////				if(event.getKeyCode()==KeyEvent.KEYCODE_BACK){
-////					VideoAutoPlayer.isPlaying = false;
-////					tabTV.releasePlayer();
-////					tabTV.url = null;
-////					JumpActivity.toStbPlay(MainActivity.this);
-////					return true;
-////				}
-//				//KEYCODE_MENU into stbPlay
-//				if(event.getKeyCode()==KeyEvent.KEYCODE_MENU) return true;
-//				
-//				
-//				mLastKeyCode = event.getKeyCode();
-//				
-//				if (mViewPageScrollState != ViewPager.SCROLL_STATE_IDLE) return true;
-//				
-//				View view = this.getCurrentFocus();
-//				
-//				ITabPage selectedPage = (ITabPage) mViewCache.get(mSelectedPageIndex);
-//				if (null != view) {
-//					if(mKeepMenuState){//如果在tab menu而且  向up
-//						 if (KeyEvent.KEYCODE_DPAD_UP == event.getKeyCode()) {
-//							// 焦点切换到viewpage上
-//							boolean ret = ((ITabPage) mViewCache.get(mSelectedPageIndex)).requestDefaultFocusUp();
-//							TextView textView = (TextView)mMenuViewList.get(mSelectedPageIndex);
-//							textView.setBackgroundResource(android.R.color.transparent);
-//							
-//							mKeepMenuState = false;
-//							mKeepMenuState = !ret;
-//							return ret;
-//						}else if(KeyEvent.KEYCODE_DPAD_RIGHT == event.getKeyCode()&&view.getId()==R.id.tab_set_text){
-//							//tabmenu中   按住右边  会向下跳动 屏蔽掉
-//							return true;
-//						}else if(KeyEvent.KEYCODE_DPAD_LEFT == event.getKeyCode()&&view.getId()==R.id.tab_tv_text){
-//							//tabmenu中  按住左边   回想下跳动  屏蔽掉   
-//							return true;
-//						}else if(KeyEvent.KEYCODE_DPAD_UP==event.getKeyCode()){
-////							if ( !selectedPage.canGoUp()) {
-////								mMenuViewList.get(mSelectedPageIndex).requestFocus();
-////								onTabGetFocus((ImageView)mMenuViewList.get(mSelectedPageIndex));
-////								mKeepMenuState = true;
-////							}
-//							mKeepMenuState = false;
-//							return true;
-//						}
-//					}
-////					else if(R.id.main_page_search_button == view.getId()){
-////						
-////						if (KeyEvent.KEYCODE_DPAD_UP == event.getKeyCode()) {
-////							// 搜索按钮，向下
-////							return selectedPage.requestDefaultFocusBottom();
-////						}
-////					}
-////					else if(KeyEvent.KEYCODE_DPAD_DOWN == event.getKeyCode()&&!selectedPage.canGoDown()){
-////						mSearchButton.requestFocus();
-////					}
-////					else if(KeyEvent.KEYCODE_DPAD_RIGHT == event.getKeyCode()&&!selectedPage.canGoRight()){
-////						return true;
-////					} 
-//					else{ //非菜单按下
-//						boolean isUp = KeyEvent.KEYCODE_DPAD_UP == event.getKeyCode();
-//						boolean isDown = KeyEvent.KEYCODE_DPAD_DOWN == event.getKeyCode();
-//						if (isDown && !selectedPage.canGoDown()) {
-////							mViewCache.clear();
-////							mViewCache.addAll(mDoubleViewCache);
-////							mViewPageAdapter.notifyDataSetChanged();
-////							mViewPage.setCurrentItem(mSelectedPageTempIndex, false);
-//							mMenuViewList.get(mSelectedPageIndex).requestFocus();
-//							mKeepMenuState = true;
-//							onTabGetFocus((TextView)mMenuViewList.get(mSelectedPageIndex));
-//							return true;
-//						}else if(isUp && !selectedPage.canGoUp()){
-//							return true;
-//						}else {
-//							return super.dispatchKeyEvent(event);
-//						}
-//					
-//					}
-//				}
-//			}
-//			return super.dispatchKeyEvent(event);
-//			
-//		}
 
 }
