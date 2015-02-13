@@ -3,6 +3,7 @@ package com.kylin.view;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +13,11 @@ import android.widget.TextView;
 
 import com.kylin.R;
 import com.kylin.utils.BitmapHelp;
+import com.kylin.utils.BitmapViewUtils;
 import com.lidroid.xutils.BitmapUtils;
+import com.lidroid.xutils.bitmap.BitmapDisplayConfig;
+import com.lidroid.xutils.bitmap.callback.BitmapLoadCallBack;
+import com.lidroid.xutils.bitmap.callback.BitmapLoadFrom;
 
 public class CommonItemView extends RelativeLayout {
 
@@ -52,22 +57,30 @@ public class CommonItemView extends RelativeLayout {
 		nameText.setText(string);
 	}
 
-	public void setIcon(int resId) {
-		image_icon.setImageResource(resId);
-	}
+	public void setIcon(String imageurl, final int resId) {
+		if(imageurl == null || "".equals(imageurl) ){
+//			image_icon.setImageResource(resId);
+		}else {
+			BitmapViewUtils.setImage(image_icon,imageurl,resId,mContext);
+		}
+	} 
 
 	
-	public void setItemBackground(int resId) {
-		image_content.setBackgroundResource(resId);
+	public void setItemBackground(String imageurl, int resId) {
+		if(imageurl == null || "".equals(imageurl) ){
+			image_content.setImageResource(resId);
+		}else {
+			BitmapViewUtils.setImage(image_content,imageurl,resId,mContext);
+		}
 	}
 
 	public void setNameSize(int size) {
 		nameText.setTextSize(size);
 	}
 	
-	public void setNameBg(int resid) {
-//		nameText.setBackgroundColor(Color.parseColor(colorString));
-		nameText.setBackgroundResource(resid);
+	public void setNameBg(String resString) {
+		nameText.setBackgroundColor(Color.parseColor(resString));
+//		nameText.setBackgroundResource(resid);
 	}
 
 	public void setItemBackgroundUrl(String url) {
@@ -77,6 +90,9 @@ public class CommonItemView extends RelativeLayout {
 //        bitmapUtils.configDefaultBitmapConfig(Bitmap.Config.RGB_565);
 		bitmapUtils.display(image_content, url);		
 	}
-	
+
+	public void setNameColor(String nameColor) {
+		nameText.setTextColor(Color.parseColor(nameColor));
+	}
 	
 }

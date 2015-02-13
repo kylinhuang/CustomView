@@ -36,6 +36,7 @@ import com.kylin.bean.MainEntity;
 import com.kylin.bean.TimeEntity;
 import com.kylin.bean.TitleEntity;
 import com.kylin.utils.BitmapHelp;
+import com.kylin.utils.BitmapViewUtils;
 import com.kylin.utils.EntityUtils;
 import com.kylin.view.ITabPage;
 import com.kylin.view.Tab;
@@ -213,7 +214,7 @@ public class MainActivity extends Activity {
 				public void onLoadCompleted(View container, String uri,
 						Bitmap bitmap, BitmapDisplayConfig config,
 						BitmapLoadFrom from) {
-					 fadeInDisplay(view, bitmap);
+					 BitmapViewUtils.fadeInDisplay(view, bitmap);
 				}
 
 				@Override
@@ -227,17 +228,6 @@ public class MainActivity extends Activity {
 		initViewParameter(logoEntity, rl, view);
 		
 	}
-	private static final ColorDrawable TRANSPARENT_DRAWABLE = new ColorDrawable(android.R.color.transparent);
-	protected void fadeInDisplay(ImageView imageView, Bitmap bitmap) {
-        final TransitionDrawable transitionDrawable =
-                new TransitionDrawable(new Drawable[]{
-                        TRANSPARENT_DRAWABLE,
-                        new BitmapDrawable(imageView.getResources(), bitmap)
-                });
-        imageView.setImageDrawable(transitionDrawable);
-        transitionDrawable.startTransition(500);
-    }
-
  
 	private void initViewParameter(BaseEntity entity, RelativeLayout  parentView,View view) {
 		view.setFocusable(entity.hasFocus);

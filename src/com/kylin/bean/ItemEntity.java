@@ -12,15 +12,17 @@ public class ItemEntity extends BaseEntity implements Serializable{
 	public String name;
 	public String action;
 	public int nameSize;
-	public int image_content;
-	public int image_icon;
+	public String image_content;
+	public String image_icon;
 	public int NextFocusUpId	= -1;
 	public int NextFocusRightId	= -1;
 	public int NextFocusDownId	= -1;
 	public int NextFocusLeftId 	= -1;
-	/** image 资源类型   0 ---资源获取  1 ---uri获取 */ 
-	public int image_content_type = 0;
-	public String image_content_uri;
-	public boolean hasNameBg = false;
+ 
+	/** #RRGGBB #AARRGGBB*/
+	public String nameColor;
+	
+	/**#RRGGBB #AARRGGBB*/
+	public String nameBg;
 
 }

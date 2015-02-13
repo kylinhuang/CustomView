@@ -114,17 +114,17 @@ public class Tab extends FrameLayout implements ITabPage{
 		CommonItemView commonItemView = new CommonItemView(mContext);
 		commonItemView.setName(item.name);
 		commonItemView.setNameSize(item.nameSize);
-		commonItemView.setIcon(item.image_icon);
-		if(item.image_content_type == 1){
-			commonItemView.setItemBackgroundUrl(item.image_content_uri);
-		}else {
-			commonItemView.setItemBackground(item.image_content);
-		}
+		commonItemView.setIcon(item.image_icon,R.drawable.system_settings_image);
 		
-		if (item.hasNameBg)   commonItemView.setNameBg(R.color.name_bg);
+		commonItemView.setItemBackground(item.image_content ,R.drawable.item_bg);
+		
+		if (item.nameBg !=null && !"".equals(item.nameBg))   commonItemView.setNameBg(item.nameBg);
+		if (item.nameColor !=null && !"".equals(item.nameColor))   commonItemView.setNameColor(item.nameColor);
 		commonItemView.setFocusable(item.hasFocus);
 		commonItemView.setBackgroundResource(R.drawable.image_button_bg);
-		commonItemView.setOnFocusChangeListener(mFocusListener);
+		
+		
+		if(item.hasFocus)  commonItemView.setOnFocusChangeListener(mFocusListener);
 		
 		
 		commonItemView.setOnClickListener(new OnClickListener(item));
