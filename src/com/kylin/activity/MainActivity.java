@@ -156,7 +156,7 @@ public class MainActivity extends Activity {
 //		mViewPager.setFocusable(true);
 		mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
 		mViewPageAdapter = new ViewPageAdapter(mViewCache);
-		mViewPager.setOffscreenPageLimit(5);
+		mViewPager.setOffscreenPageLimit(6);
 		mViewPager.setAdapter(mViewPageAdapter);
 		mViewPager.setCurrentItem(0);
 		setCurpager(0);
@@ -425,11 +425,25 @@ public class MainActivity extends Activity {
 							}
 							break;
 						case KeyEvent.KEYCODE_DPAD_LEFT :// LEFT
+							if (mSelectedPageIndex == 0) {// 第一页
+								if (!selectedPage.canGoLeft()) {
+									mViewPager.setCurrentItem(arrTab.size()-1, false);
+									ITabPage page = (ITabPage) mViewCache.get(arrTab.size()-1);
+									page.requestDefaultFocusLeft();
+									return true;
+								}
+							}
 							
 							break;
-
 						case KeyEvent.KEYCODE_DPAD_RIGHT :// RIGHT
-							
+							if (mSelectedPageIndex == arrTab.size()-1) {// 最后一页
+								if (!selectedPage.canGoRight()) {
+									mViewPager.setCurrentItem(0, false);
+									ITabPage page = (ITabPage) mViewCache.get(0);
+									page.requestDefaultFocusRight();
+									return true;
+								}
+							}
 							break;
 						default:
 							break;

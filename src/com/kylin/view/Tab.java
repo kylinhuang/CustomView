@@ -29,6 +29,7 @@ public class Tab extends FrameLayout implements ITabPage{
 	private RelativeLayout rl;
 
 	private ArrayList<ItemEntity> arrItem;
+	ArrayList<CommonItemView> arrCommonItemView = new ArrayList<CommonItemView>();
 	
 	
 	public Tab(Context context) {
@@ -50,13 +51,23 @@ public class Tab extends FrameLayout implements ITabPage{
 
 	@Override
 	public boolean requestDefaultFocusLeft() {
-		// TODO Auto-generated method stub
+		try {
+			arrCommonItemView.get(arrCommonItemView.size()-1).requestFocus();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return false;
 	}
 
 	@Override
 	public boolean requestDefaultFocusRight() {
-		// TODO Auto-generated method stub
+		try {
+			arrCommonItemView.get(0).requestFocus();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return false;
 	}
 
@@ -110,7 +121,7 @@ public class Tab extends FrameLayout implements ITabPage{
 	
 	
 	private void initViewItem(ItemEntity item) {	
-		ArrayList<CommonItemView> arrCommonItemView = new ArrayList<CommonItemView>();
+		arrCommonItemView = new ArrayList<CommonItemView>();
 		CommonItemView commonItemView = new CommonItemView(mContext);
 		commonItemView.setName(item.name);
 		commonItemView.setNameSize(item.nameSize);
