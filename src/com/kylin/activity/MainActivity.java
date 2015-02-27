@@ -3,16 +3,15 @@ package com.kylin.activity;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.TransitionDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
@@ -27,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Scroller;
 import android.widget.TextView;
+
 import com.google.gson.Gson;
 import com.kylin.R;
 import com.kylin.bean.BaseEntity;
@@ -70,7 +70,7 @@ public class MainActivity extends Activity {
 	
 	/**  为VIewPager保存VIew界面的集合*/
 	private List<View> mViewCache = new ArrayList<View>();
-	private ViewPageAdapter mViewPageAdapter;
+	private MyPagerAdapter mViewPageAdapter;
 	private Tab tabTV;
 	
 	/** 最后 按键值  */  
@@ -79,7 +79,9 @@ public class MainActivity extends Activity {
 	/**  焦点是否保持在菜单下   */ 
 	private boolean mKeepMenuState ;
 	private ImageView networkView;
-	private TimeView timeView; 
+	private TimeView timeView;
+	public int mViewPageScrollState;
+	private boolean isMenuPager = false; 
 
 	
 	@Override
@@ -140,10 +142,24 @@ public class MainActivity extends Activity {
 
 	private void initViewPager() {
 		Tab tab ;
-		for (int i = 0; i < arrTab.size(); i++) {
-			tab  =  new Tab(mContext);
-			tab.setData(arrTab.get(i));
-			mViewCache.add(tab);
+		for (int i = 0; i < arrTab.size()+2; i++) {
+			if(i == 0){ // add 最后一页
+				tab  =  new Tab(mContext);
+				tab.setData(arrTab.get(arrTab.size()-1));
+				mViewCache.add(tab);
+			}else if (i == (arrTab.size() +2-1)) { //add 
+				tab  =  new Tab(mContext);
+				tab.setData(arrTab.get(0));
+				mViewCache.add(tab);
+			}else {
+				tab  =  new Tab(mContext);
+				tab.setData(arrTab.get(i-1));
+				mViewCache.add(tab);
+			}
+			
+//			tab  =  new Tab(mContext);
+//			tab.setData(arrTab.get(i));
+//			mViewCache.add(tab);
 		}
 		
 		RelativeLayout.LayoutParams relLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT); 
@@ -154,13 +170,14 @@ public class MainActivity extends Activity {
 	 
 		mViewPager = new ViewPager(mContext);
 //		mViewPager.setFocusable(true);
-		mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
-		mViewPageAdapter = new ViewPageAdapter(mViewCache);
+		mViewPageAdapter = new MyPagerAdapter();
 		mViewPager.setOffscreenPageLimit(6);
 		mViewPager.setAdapter(mViewPageAdapter);
 		mViewPager.setCurrentItem(0);
-		setCurpager(0);
+		mViewPager.setCurrentItem(1);
+		setCurpager(0);	
 		rl.addView(mViewPager, relLayoutParams);
+		mViewPager.setOnPageChangeListener(new MyOnPageChangeListener());
 	}
 
 
@@ -285,7 +302,7 @@ public class MainActivity extends Activity {
 			mKeepMenuState = hasFocus;
 			if (hasFocus) {
 				((TextView)v).setTextSize(35);
-				mViewPager.setCurrentItem(titleEntity.position-1);
+				mViewPager.setCurrentItem(titleEntity.position );
 				Log.e(TAG, ((TextView)v).getText().toString() + titleEntity.position +  "");
 				v.setBackgroundResource(R.drawable.text_view_bg);
 				v.bringToFront();
@@ -356,8 +373,19 @@ public class MainActivity extends Activity {
 		public class MyOnPageChangeListener implements OnPageChangeListener {
 
 			@Override
-			public void onPageScrollStateChanged(int arg0) {
-				Log.e(TAG, "onPageScrollStateChanged  " + arg0 );
+			public void onPageScrollStateChanged(int state) {
+				Log.e(TAG, "onPageScrollStateChanged  " + state );
+
+				mViewPageScrollState = state;
+				if(state == ViewPager.SCROLL_STATE_IDLE){
+				
+					if(mViewPager.getCurrentItem() == 0){
+						mViewPager.setCurrentItem(mViewCache.size()-2  , false);
+					}else if(mViewPager.getCurrentItem() == (mViewCache.size()-1)){
+						mViewPager.setCurrentItem(1, false);
+					}
+				}
+			
 			}
 
 			@Override
@@ -366,10 +394,147 @@ public class MainActivity extends Activity {
 			}
 
 			@Override
-			public void onPageSelected(int arg0) {
-				setCurpager(arg0);
-				mSelectedPageIndex = arg0;
-				Log.e(TAG, "onPageSelected  " + arg0  );
+			public void onPageSelected(int position) {
+				setCurpager(position -1);
+				mSelectedPageIndex = position;
+				Log.e(TAG, "onPageSelected  " + position  );
+				if (mKeepMenuState) {
+					View lastItem = null;
+					View currentItem = null;
+					if (mLastKeyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+//						((ITabPage) mViewCache.get(position)).requestDefaultFocusRight();
+//						switch (position) {
+//						
+//							case 0:
+//								lastItem = mMenuItemList.get(0);	
+//								onTextViewGetSelect2Normal((ImageView) lastItem);
+//								currentItem = mMenuItemList.get(5);
+//								onTextViewGetNormal2Select((ImageView) currentItem);
+//								
+//								break;
+//							case 1:
+//								
+//								lastItem = mMenuItemList.get(1);	
+//								onTextViewGetSelect2Normal((ImageView) lastItem);
+//								currentItem = mMenuItemList.get(0);
+//								onTextViewGetNormal2Select((ImageView) currentItem);
+//								break;
+//							case 2:
+//								
+//								lastItem = mMenuItemList.get(2);	
+//								onTextViewGetSelect2Normal((ImageView) lastItem);
+//								currentItem = mMenuItemList.get(1);
+//								onTextViewGetNormal2Select((ImageView) currentItem);
+//								
+//								break;
+//							case 3:
+//								
+//								lastItem = mMenuItemList.get(3);	
+//								onTextViewGetSelect2Normal((ImageView) lastItem);
+//								currentItem = mMenuItemList.get(2);
+//								onTextViewGetNormal2Select((ImageView) currentItem);
+//								
+//								break;
+//							case 4:
+//								
+//								lastItem = mMenuItemList.get(4);	
+//								onTextViewGetSelect2Normal((ImageView) lastItem);
+//								currentItem = mMenuItemList.get(3);
+//								onTextViewGetNormal2Select((ImageView) currentItem);
+//								break;
+//							case 5:
+//								
+//								lastItem = mMenuItemList.get(5);	
+//								onTextViewGetSelect2Normal((ImageView) lastItem);
+//								currentItem = mMenuItemList.get(4);
+//								onTextViewGetNormal2Select((ImageView) currentItem);
+//								
+//								break;
+//							case 6:
+//								
+//								lastItem = mMenuItemList.get(0);	
+//								onTextViewGetSelect2Normal((ImageView) lastItem);
+//								currentItem = mMenuItemList.get(5);
+//								onTextViewGetNormal2Select((ImageView) currentItem);
+//								
+//								break;
+//							case 7:
+//								lastItem = mMenuItemList.get(5);	
+//								onTextViewGetSelect2Normal((ImageView) lastItem);
+//								currentItem = mMenuItemList.get(0);
+//								onTextViewGetNormal2Select((ImageView) currentItem);
+//								break;
+//						}
+					}else if(mLastKeyCode == KeyEvent.KEYCODE_DPAD_RIGHT){
+//						((ITabPage) mViewCache.get(position)).requestDefaultFocusLeft();
+						switch (position) {
+							case 0:
+								lastItem = mViewCache.get(0);	
+//								onTextViewGetSelect2Normal((ImageView) lastItem);
+								currentItem = mViewCache.get(5);
+//								onTextViewGetNormal2Select((ImageView) currentItem);
+								
+								break;
+							case 1:
+								
+								lastItem = mViewCache.get(5);	
+//								onTextViewGetSelect2Normal((ImageView) lastItem);
+								currentItem = mViewCache.get(0);
+//								onTextViewGetNormal2Select((ImageView) currentItem);
+								break;
+							case 2:
+								
+								lastItem = mViewCache.get(0);	
+//								onTextViewGetSelect2Normal((ImageView) lastItem);
+								currentItem = mViewCache.get(1);
+//								onTextViewGetNormal2Select((ImageView) currentItem);
+								
+								break;
+							case 3:
+								
+								lastItem = mViewCache.get(1);	
+//								onTextViewGetSelect2Normal((ImageView) lastItem);
+								currentItem = mViewCache.get(2);
+//								onTextViewGetNormal2Select((ImageView) currentItem);
+								
+								break;
+							case 4:
+								
+								lastItem = mViewCache.get(2);	
+//								onTextViewGetSelect2Normal((ImageView) lastItem);
+								currentItem = mViewCache.get(3);
+//								onTextViewGetNormal2Select((ImageView) currentItem);
+								break;
+							case 5:
+								
+								lastItem = mViewCache.get(3);	
+//								onTextViewGetSelect2Normal((ImageView) lastItem);
+								currentItem = mViewCache.get(4);
+//								onTextViewGetNormal2Select((ImageView) currentItem);
+								
+								break;
+							case 6:
+								lastItem = mViewCache.get(4);	
+//								onTextViewGetSelect2Normal((ImageView) lastItem);
+								currentItem = mViewCache.get(5);
+//								onTextViewGetNormal2Select((ImageView) currentItem);
+								
+								break;
+							case 7:
+								
+								lastItem = mViewCache.get(5);	
+//								onTextViewGetSelect2Normal((ImageView) lastItem);
+								currentItem = mViewCache.get(0);
+//								onTextViewGetNormal2Select((ImageView) currentItem);
+								
+								break;
+						}
+					}
+				}
+			
+				
+				
+				
 			}
 			
 		}
@@ -388,7 +553,8 @@ public class MainActivity extends Activity {
 		public boolean dispatchKeyEvent(KeyEvent event) {
 			if (KeyEvent.ACTION_DOWN == event.getAction()) {
 				mLastKeyCode = event.getKeyCode();
-//				if (mViewPageScrollState != ViewPager.SCROLL_STATE_IDLE) return true;
+				
+				if (mViewPageScrollState != ViewPager.SCROLL_STATE_IDLE) return true;
 				View view = this.getCurrentFocus();
 				ITabPage selectedPage = (ITabPage) mViewCache.get(mSelectedPageIndex);
 				if (null != view) {
@@ -399,17 +565,23 @@ public class MainActivity extends Activity {
 							break;
 						case KeyEvent.KEYCODE_DPAD_DOWN :// Down
 							if (!selectedPage.canGoDown()) {// tab不能向下
-								arrTitle.get(mSelectedPageIndex).requestFocus();
+								try {
+									arrTitle.get(mSelectedPageIndex).requestFocus();
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
 								return true;
 							}
 							
 							break;
 						case KeyEvent.KEYCODE_DPAD_LEFT :// LEFT
-							
-							break;
+							isMenuPager  = true;
+							nextPage();
+							return false;
 						case KeyEvent.KEYCODE_DPAD_RIGHT :// RIGHT
-							
-							break;
+							isMenuPager  = true;
+							UPPage();
+							return false;
 						default:
 							break;
 						}
@@ -420,30 +592,31 @@ public class MainActivity extends Activity {
 							break;
 						case KeyEvent.KEYCODE_DPAD_DOWN :// Down
 							if (!selectedPage.canGoDown()) {// tab不能向下
-								arrTitle.get(mSelectedPageIndex).requestFocus();
+								
+								arrTitle.get(mSelectedPageIndex-1).requestFocus();
 								return true;
 							}
 							break;
 						case KeyEvent.KEYCODE_DPAD_LEFT :// LEFT
-							if (mSelectedPageIndex == 0) {// 第一页
-								if (!selectedPage.canGoLeft()) {
-									mViewPager.setCurrentItem(arrTab.size()-1, false);
-									ITabPage page = (ITabPage) mViewCache.get(arrTab.size()-1);
-									page.requestDefaultFocusLeft();
-									return true;
-								}
-							}
+//							if (mSelectedPageIndex == 0) {// 第一页
+//								if (!selectedPage.canGoLeft()) {
+//									mViewPager.setCurrentItem(arrTab.size()-1, false);
+//									ITabPage page = (ITabPage) mViewCache.get(arrTab.size()-1);
+//									page.requestDefaultFocusLeft();
+//									return true;
+//								}
+//							}
 							
 							break;
 						case KeyEvent.KEYCODE_DPAD_RIGHT :// RIGHT
-							if (mSelectedPageIndex == arrTab.size()-1) {// 最后一页
-								if (!selectedPage.canGoRight()) {
-									mViewPager.setCurrentItem(0, false);
-									ITabPage page = (ITabPage) mViewCache.get(0);
-									page.requestDefaultFocusRight();
-									return true;
-								}
-							}
+//							if (mSelectedPageIndex == arrTab.size()-1) {// 最后一页
+//								if (!selectedPage.canGoRight()) {
+//									mViewPager.setCurrentItem(0, false);
+//									ITabPage page = (ITabPage) mViewCache.get(0);
+//									page.requestDefaultFocusRight();
+//									return true;
+//								}
+//							}
 							break;
 						default:
 							break;
@@ -455,4 +628,63 @@ public class MainActivity extends Activity {
 			return super.dispatchKeyEvent(event);
 		}
 
+		
+		private void UPPage() {
+			
+//			if(mSelectedPageIndex  == 1 ){ 
+//				arrTitle.get(arrTitle.size()-1).requestFocus();
+//			}else {
+//				arrTitle.get(mSelectedPageIndex-1).requestFocus();
+//			}
+			
+			try {
+				arrTitle.get(mSelectedPageIndex-1).requestFocus();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		private void nextPage() {
+//			if(mSelectedPageIndex  == (arrTitle.size()-1)){ 
+//				arrTitle.get(1).requestFocus();
+//			}else {
+//				arrTitle.get(mSelectedPageIndex+1).requestFocus();
+//			}
+			
+			try {
+				arrTitle.get(mSelectedPageIndex+1).requestFocus();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		// 适配器
+		class MyPagerAdapter extends PagerAdapter {
+
+			public void destroyItem(View view, int position, Object arg2) {
+				((ViewPager) view).removeView((View) arg2);
+			}
+
+			public int getCount() {
+				return mViewCache.size();
+			}
+
+			public Object instantiateItem(View arg0, int arg1) {
+				Log.i("instantiateItem", arg1 + "");
+				((ViewPager) arg0).addView(mViewCache.get(arg1), 0);
+
+				return mViewCache.get(arg1);
+			}
+
+			public boolean isViewFromObject(View arg0, Object arg1) {
+				return arg0 == (arg1);
+			}
+
+			@Override
+			public void startUpdate(View arg0) {
+			}
+
+		}
 }
