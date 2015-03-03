@@ -1,19 +1,50 @@
 package com.kylin.activity;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.teleal.cling.android.AndroidUpnpService;
+import org.teleal.cling.binding.LocalServiceBindingException;
+import org.teleal.cling.binding.annotations.AnnotationLocalServiceBinder;
+import org.teleal.cling.model.DefaultServiceManager;
+import org.teleal.cling.model.ValidationException;
+import org.teleal.cling.model.meta.Device;
+import org.teleal.cling.model.meta.DeviceDetails;
+import org.teleal.cling.model.meta.DeviceIdentity;
+import org.teleal.cling.model.meta.LocalDevice;
+import org.teleal.cling.model.meta.LocalService;
+import org.teleal.cling.model.meta.ManufacturerDetails;
+import org.teleal.cling.model.meta.ModelDetails;
+import org.teleal.cling.model.meta.RemoteDevice;
+import org.teleal.cling.model.types.DeviceType;
+import org.teleal.cling.model.types.ServiceId;
+import org.teleal.cling.model.types.UDADeviceType;
+import org.teleal.cling.model.types.UDAServiceId;
+import org.teleal.cling.model.types.UDN;
+import org.teleal.cling.registry.DefaultRegistryListener;
+import org.teleal.cling.registry.RegistrationException;
+import org.teleal.cling.registry.Registry;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Instrumentation;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -26,8 +57,10 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Scroller;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.kylin.MyApplication;
 import com.kylin.R;
 import com.kylin.bean.BaseEntity;
 import com.kylin.bean.ItemEntity;
@@ -81,17 +114,91 @@ public class MainActivity extends Activity {
 	private ImageView networkView;
 	private TimeView timeView;
 	public int mViewPageScrollState;
-	private boolean isMenuPager = false; 
-
+	private boolean isMenuPager = false;
+	private DeviceListRegistryListener deviceListRegistryListener;
+	protected AndroidUpnpService upnpService;
+	private Handler mHandler;
+	public static MainActivity mInstance;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mContext = this;
+		mInstance= this;
+		
+		 DisplayMetrics dm = new DisplayMetrics();  
+	     getWindowManager().getDefaultDisplay().getMetrics(dm); 
+	     String s =  "density:"+dm.density+";densityDpi:"+dm.densityDpi  
+	            +";height:"+dm.heightPixels+";width:"+dm.widthPixels  
+	            +";scaledDensity:"+dm.scaledDensity+";xdpi:"+dm.xdpi  
+	            +";ydpi:"+dm.ydpi;  
+	    MyApplication.mDisplayScale =   dm.heightPixels /720.0;
+//	     density:1.0;
+//	     densityDpi:160;
+//	     height:1080;
+//	     width:1920; 
+//	     scaledDensity:1.0;
+//	     xdpi:144.0;
+//	     ydpi:144.0
+	     
+	     
+//	     density:1.0;
+//	     densityDpi:160;
+//	     height:720;
+//	     width:1280;
+//	     scaledDensity:1.0;
+//	     xdpi:160.15764;
+//	     ydpi:160.42105
+	     
+	     
+//	     density:1.5;
+//	     densityDpi:240;
+//	     height:782;
+//	     width:480;
+//	     scaledDensity:1.5;
+//	     xdpi:240.0;
+//	     ydpi:240.0
+	     
+	     
+	     Log.e(TAG, s);
 		
 		init();
 		initEntity();
 		initView();
+		
+		initRemote();
+		initHandler();
+	}
+
+	private void initHandler() {
+		mHandler= new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				
+			final String  commend = msg.getData().getString("msg");
+			
+			
+			new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					new Instrumentation().sendKeyDownUpSync(Integer.parseInt(commend));
+				}
+			}).start();
+			
+			Toast.makeText(mInstance, commend, 1).show();
+
+			}
+		};
+	}
+
+	private void initRemote() {
+		deviceListRegistryListener = new DeviceListRegistryListener();
+
+		getApplicationContext().bindService(
+				new Intent(this, DemoUpnpService.class), serviceConnection,
+				Context.BIND_AUTO_CREATE);
+		
 	}
 
 	private void init() {
@@ -187,7 +294,7 @@ public class MainActivity extends Activity {
 		textView.setText(titleEntity.text);
 		textView.setFocusable(true);
 		textView.setOnFocusChangeListener(new OnFocusChangeListener(titleEntity));
-		textView.setTextSize(titleEntity.textSize);
+		textView.setTextSize((float)(titleEntity.textSize * MyApplication.mDisplayScale));
 		
 		textView.setTag(titleEntity.position);
 		
@@ -195,11 +302,11 @@ public class MainActivity extends Activity {
 		// TODO Auto-generated method stub
 		
 		 RelativeLayout.LayoutParams relLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT); 
-		 relLayoutParams.setMargins(titleEntity.x, titleEntity.y, 0, 0);
+		 relLayoutParams.setMargins((int)(titleEntity.x*MyApplication.mDisplayScale), (int)(titleEntity.y*MyApplication.mDisplayScale), 0, 0);
 		 
 		 
-		 if (titleEntity.width != 0)  relLayoutParams.width  = titleEntity.width;
-		 if (titleEntity.height != 0) relLayoutParams.height = titleEntity.height;
+		 if (titleEntity.width != 0)  relLayoutParams.width  = (int)(titleEntity.width  * MyApplication.mDisplayScale) ;
+		 if (titleEntity.height != 0) relLayoutParams.height = (int)(titleEntity.height * MyApplication.mDisplayScale);
 		 rl.addView(textView, relLayoutParams);
 		 
 		 arrTitle.add(textView);
@@ -249,10 +356,10 @@ public class MainActivity extends Activity {
 	private void initViewParameter(BaseEntity entity, RelativeLayout  parentView,View view) {
 		view.setFocusable(entity.hasFocus);
 		RelativeLayout.LayoutParams relLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT); 
-		relLayoutParams.setMargins(entity.x, entity.y, 0, 0);
+		relLayoutParams.setMargins((int)(entity.x * MyApplication.mDisplayScale),(int) (entity.y * MyApplication.mDisplayScale), 0, 0);
 		 
-		if (entity.width != 0)  relLayoutParams.width  = entity.width;
-		if (entity.height != 0) relLayoutParams.height = entity.height;
+		if (entity.width != 0)  relLayoutParams.width  = (int)(entity.width  * MyApplication.mDisplayScale);
+		if (entity.height != 0) relLayoutParams.height = (int)(entity.height * MyApplication.mDisplayScale);
 		parentView.addView(view, relLayoutParams);
 	}
 
@@ -574,14 +681,14 @@ public class MainActivity extends Activity {
 							}
 							
 							break;
-						case KeyEvent.KEYCODE_DPAD_LEFT :// LEFT
-							isMenuPager  = true;
-							nextPage();
-							return false;
-						case KeyEvent.KEYCODE_DPAD_RIGHT :// RIGHT
-							isMenuPager  = true;
-							UPPage();
-							return false;
+//						case KeyEvent.KEYCODE_DPAD_LEFT :// LEFT
+//							isMenuPager  = true;
+//							UPPage();
+//							return true;
+//						case KeyEvent.KEYCODE_DPAD_RIGHT :// RIGHT
+//							isMenuPager  = true;
+//							nextPage();
+//							return true;
 						default:
 							break;
 						}
@@ -687,4 +794,160 @@ public class MainActivity extends Activity {
 			}
 
 		}
+		
+		
+
+		private ServiceConnection serviceConnection = new ServiceConnection() {
+
+			public void onServiceConnected(ComponentName className, IBinder service) {
+				upnpService = (AndroidUpnpService) service;
+
+				if (upnpService == null) {
+					return;
+				}
+				// Getting ready for future device advertisements
+				upnpService.getRegistry().addListener(deviceListRegistryListener);
+				try {
+					upnpService.getRegistry().addDevice(createDevice());
+				} catch (RegistrationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (LocalServiceBindingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ValidationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+//				deviceListAdapter.clear();
+
+				for (Device device : upnpService.getRegistry().getDevices()) {
+					Log.i("zeng", "device:" + device.getDisplayString());
+					deviceListRegistryListener.deviceAdded(device);
+				}
+				// Refresh device list
+				// upnpService.getControlPoint().search();
+			}
+
+			public void onServiceDisconnected(ComponentName className) {
+				upnpService = null;
+			}
+		};
+
+		
+		/**设备注册的监听*/
+		public class DeviceListRegistryListener extends DefaultRegistryListener {
+
+			@Override
+			public void localDeviceAdded(Registry registry, LocalDevice device) {
+				// TODO Auto-generated method stub
+				Log.i("zeng", "localDeviceAdded");
+				deviceAdded(device);
+			}
+
+			@Override
+			public void remoteDeviceAdded(Registry registry, RemoteDevice device) {
+				Log.i("zeng", "remoteDeviceAdded");
+				deviceAdded(device);
+			}
+
+			@Override
+			public void remoteDeviceRemoved(Registry registry, RemoteDevice device) {
+				final DeviceItem display = new DeviceItem(device, device.getDisplayString());
+				deviceRemoved(display);
+			}
+
+			public void deviceAdded(final Device device) {
+				// if (!(device instanceof RemoteDevice)) {
+				// return;
+				// }
+				ServiceId serviceId = new UDAServiceId("MessageHandler");
+
+				if (device.findService(serviceId) == null) {
+					return;
+				}
+
+				DeviceItem item = new DeviceItem(device);
+//				deviceAdded(item);
+			}
+
+//			public void deviceAdded(final DeviceItem di) {
+//				runOnUiThread(new Runnable() {
+//					public void run() {
+//
+//						int position = deviceListAdapter.getPosition(di);
+//						if (position >= 0) {
+//							// Device already in the list, re-set new value at same
+//							// position
+//							deviceListAdapter.remove(di);
+//							deviceListAdapter.insert(di, position);
+//						} else {
+//							deviceListAdapter.add(di);
+//						}
+//						deviceListView.setAdapter(deviceListAdapter);
+//					}
+//				});
+//			}
+
+			public void deviceRemoved(final DeviceItem di) {
+				runOnUiThread(new Runnable() {
+					public void run() {
+//						deviceListAdapter.remove(di);
+					}
+				});
+			}
+		}
+
+		
+		// DOC: CREATEDEVICE
+		private LocalDevice createDevice() throws ValidationException,
+				LocalServiceBindingException, IOException {
+			DeviceIdentity identity = new DeviceIdentity(
+					UDN.uniqueSystemIdentifier("UpnpDemo"));
+
+			DeviceType type = new UDADeviceType("UpnpDemo", 1);
+
+			DeviceDetails details = new DeviceDetails(android.os.Build.MODEL,
+					new ManufacturerDetails(android.os.Build.MANUFACTURER),
+					new ModelDetails("UpnpDemo", "A demo for chat", "v1"));
+
+			LocalService<MessageHandler> messageHandlerService = new AnnotationLocalServiceBinder()
+					.read(MessageHandler.class);
+
+			messageHandlerService.setManager(new DefaultServiceManager(
+					messageHandlerService, MessageHandler.class));
+
+			return new LocalDevice(identity, type, details, messageHandlerService);
+		}
+
+		
+		public void messageReceived(String msg,String from) {
+			 Message message = mHandler.obtainMessage();
+			 Bundle data = new Bundle();
+			 data.putString("msg", msg);
+			 message.setData(data);
+			
+			 mHandler.sendMessage(message);
+			
+			
+			
+			
+//			if (msg.equals("play")) {
+//				mHandler.sendEmptyMessage(COMMAND_PLAY);
+//			}
+//			if (msg.equals("pause")) {
+//				mHandler.sendEmptyMessage(COMMAND_PAUSE);
+//			}
+//			if (msg.equals("stop")) {
+//				mHandler.sendEmptyMessage(COMMAND_STOP);
+//			}
+			
+			
+			
+		}
+
 }

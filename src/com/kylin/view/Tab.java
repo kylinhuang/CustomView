@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.kylin.MyApplication;
 import com.kylin.R;
 import com.kylin.bean.ItemEntity;
 
@@ -147,10 +148,10 @@ public class Tab extends FrameLayout implements ITabPage{
 		commonItemView.setNextFocusDownId(item.NextFocusDownId);
 		
 		 RelativeLayout.LayoutParams relLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT); 
-		 relLayoutParams.setMargins(item.x, item.y, 0, 0);
+		 relLayoutParams.setMargins((int)(item.x*MyApplication.mDisplayScale), (int)(item.y*MyApplication.mDisplayScale), 0, 0);
 		 
-		 if (item.width != 0)  relLayoutParams.width  = item.width;
-		 if (item.height != 0) relLayoutParams.height = item.height;
+		 if (item.width != 0)  relLayoutParams.width  = (int)(item.width*MyApplication.mDisplayScale);
+		 if (item.height != 0) relLayoutParams.height = (int)(item.height*MyApplication.mDisplayScale);
 		 rl.addView(commonItemView, relLayoutParams);
 		 
 		 arrCommonItemView.add(commonItemView);

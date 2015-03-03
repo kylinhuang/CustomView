@@ -136,7 +136,7 @@ public class EntityUtils {
 		tvItem.NextFocusLeftId = 50;
 		tvItem.NextFocusRightId = 52;
 		tvItem.hasFocus = true;
-		tvItem.x = 730;
+		tvItem.x = 750;
 		tvItem.y = 20;
 		tvItem.width  = 300;
 		tvItem.height = 550;
@@ -151,7 +151,7 @@ public class EntityUtils {
 		lookbackItem.id = 52;
 		lookbackItem.NextFocusLeftId = 51;
 		lookbackItem.hasFocus = true;
-		lookbackItem.x = 1000;
+		lookbackItem.x = 1020;
 		lookbackItem.y = 20;
 		lookbackItem.width  = 250;
 		lookbackItem.height = 550;
