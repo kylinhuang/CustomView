@@ -66,6 +66,7 @@ import com.kylin.bean.BaseEntity;
 import com.kylin.bean.ItemEntity;
 import com.kylin.bean.LogoEntity;
 import com.kylin.bean.MainEntity;
+import com.kylin.bean.PagerEntity;
 import com.kylin.bean.TimeEntity;
 import com.kylin.bean.TitleEntity;
 import com.kylin.utils.BitmapHelp;
@@ -118,6 +119,7 @@ public class MainActivity extends Activity {
 	private DeviceListRegistryListener deviceListRegistryListener;
 	protected AndroidUpnpService upnpService;
 	private Handler mHandler;
+	private PagerEntity pagerEntity;
 	public static MainActivity mInstance;
 	
 	@Override
@@ -220,6 +222,8 @@ public class MainActivity extends Activity {
 		timeEntity 		= mainEntity.getTimeEntity();
 		arrayTitle 		= mainEntity.getArrayTitle();
 		arrTab 			= mainEntity.getArrTab();
+		
+		pagerEntity =	mainEntity.getPagerEntity();
 	}
 
 	private void initView() {
@@ -233,7 +237,7 @@ public class MainActivity extends Activity {
 		 for (TitleEntity titleEntity : arrayTitle) {
 			 initViewTitle(titleEntity);
 		}
-		initViewPager();
+		initViewPager(pagerEntity);
 		changeViewPageScroller();
 		
 	}
@@ -243,11 +247,11 @@ public class MainActivity extends Activity {
 
 	private void initViewTime(TimeEntity timeEntity ) {
 		timeView = new TimeView(mContext);
-		timeView.setTextSize(timeEntity.textSize);
+		timeView.setTextSize((int)(timeEntity.textSize*MyApplication.mDisplayScale));
 		initViewParameter(timeEntity, rl, timeView);
 	}
 
-	private void initViewPager() {
+	private void initViewPager(PagerEntity pagerEntity) {
 		Tab tab ;
 		for (int i = 0; i < arrTab.size()+2; i++) {
 			if(i == 0){ // add 最后一页
@@ -270,10 +274,14 @@ public class MainActivity extends Activity {
 		}
 		
 		RelativeLayout.LayoutParams relLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT); 
-		relLayoutParams.setMargins(0, 80, 0, 0);
+		relLayoutParams.setMargins((int)(pagerEntity.x*MyApplication.mDisplayScale), (int)(pagerEntity.y*MyApplication.mDisplayScale), 0,  0);
 		 
-//		 if (entity.width != 0)  relLayoutParams.width  = entity.width;
-//		 if (entity.height != 0) relLayoutParams.height = entity.height;
+		
+		 
+		 
+		 if (pagerEntity.width != 0)  relLayoutParams.width  = (int)(pagerEntity.width  * MyApplication.mDisplayScale) ;
+		 if (pagerEntity.height != 0) relLayoutParams.height = (int)(pagerEntity.height * MyApplication.mDisplayScale);
+		 
 	 
 		mViewPager = new ViewPager(mContext);
 //		mViewPager.setFocusable(true);

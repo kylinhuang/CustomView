@@ -7,6 +7,7 @@ import com.kylin.bean.BaseEntity;
 import com.kylin.bean.ItemEntity;
 import com.kylin.bean.LogoEntity;
 import com.kylin.bean.MainEntity;
+import com.kylin.bean.PagerEntity;
 import com.kylin.bean.TimeEntity;
 import com.kylin.bean.TitleEntity;
 
@@ -19,11 +20,21 @@ public class EntityUtils {
 		mainEntity.setLogoEntity(EntityUtils.getLogoEntity());
 		mainEntity.setNetworkEntity(EntityUtils.getNetworkEntity());
 		mainEntity.setTimeEntity(EntityUtils.getTimeEntity());
+		mainEntity.setPagerEntity(EntityUtils.getPagerEntity());
 		
 		mainEntity.setArrayTitle(EntityUtils.getArrayTitle());
 		mainEntity.setArrTab(EntityUtils.getArrayTab());
 		
 		return mainEntity;
+	}
+
+	private static PagerEntity getPagerEntity() {
+		PagerEntity pagerEntity = new PagerEntity();
+		pagerEntity.x = 0;
+		pagerEntity.y = 80;
+		
+		pagerEntity.height = 560;
+		return pagerEntity;
 	}
 
 	public static LogoEntity getLogoEntity() {
@@ -39,7 +50,7 @@ public class EntityUtils {
 
 	public static BaseEntity getNetworkEntity() {
 		BaseEntity networkEntity = new BaseEntity();
-		networkEntity.x = 1100;
+		networkEntity.x = 1050;
 		networkEntity.y = 40;
 		return networkEntity;
 	}
@@ -48,7 +59,7 @@ public class EntityUtils {
 		TimeEntity timeEntity = new TimeEntity();
 		timeEntity.timeType = 12;
 		timeEntity.textSize = 16;
-		timeEntity.x = 1150;
+		timeEntity.x = 1100;
 		timeEntity.y = 40;
 		return timeEntity;
 	}

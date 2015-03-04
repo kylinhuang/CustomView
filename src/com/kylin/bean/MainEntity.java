@@ -9,6 +9,7 @@ public class MainEntity {
 	
 	LogoEntity logoEntity;
 	BaseEntity networkEntity;
+	PagerEntity pagerEntity;
 	TimeEntity timeEntity;
 	ArrayList<TitleEntity> arrayTitle;
 	
@@ -63,4 +64,14 @@ public class MainEntity {
 		this.arrTab = arrTab;
 	}
 
+	public PagerEntity getPagerEntity() {
+		return pagerEntity;
+	}
+
+	public void setPagerEntity(PagerEntity pagerEntity) {
+		this.pagerEntity = pagerEntity;
+	}
+
+	
+	
 }

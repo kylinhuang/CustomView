@@ -125,7 +125,7 @@ public class Tab extends FrameLayout implements ITabPage{
 		arrCommonItemView = new ArrayList<CommonItemView>();
 		CommonItemView commonItemView = new CommonItemView(mContext);
 		commonItemView.setName(item.name);
-		commonItemView.setNameSize(item.nameSize);
+		commonItemView.setNameSize((int)(item.nameSize*MyApplication.mDisplayScale));
 		commonItemView.setIcon(item.image_icon,R.drawable.system_settings_image);
 		
 		commonItemView.setItemBackground(item.image_content ,R.drawable.item_bg);
